@@ -25,5 +25,35 @@
     "options": ["extends", "inherits", "implements", "extends from"],
     "answer": "extends",
     "explanation": "Java使用extends关键字继承类。"
+  },
+  {
+    "id":4,
+    "subject":"Java",
+    "type":"填空题",
+    "question":"什么是文件？",
+    "answer":"文件是可认为先关记录或放在一起的数据的集合"
+  },
+  {
+    "id":5,
+    "subject":"Java",
+    "type":"填空题",
+    "question":"文件一般储存在哪里？",
+    "answer":"文件夹、文件.txt"
+  },
+  {
+    "id":6,
+    "subject":"Java",
+    "type":"填空题",
+    "question":"file类的对象所表示的是什么？",
+    "answer":"文件系统中的文件或目录"
+  },
+  {
+    "id":7,
+    "subject":"Java",
+    "type":"选择题",
+    "question":"File类的构造方法不包括以下哪种？",
+    "options":["File(String path)", "File(File parent, String child)", "File(String parent, String child)", "File()"],
+    "answer":"File()",
+    "explanation":"File类没有无参构造方法。"
   }
 ]
