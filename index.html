@@ -38,6 +38,7 @@
                     <option value="选择题">选择题</option>
                     <option value="填空题">填空题</option>
                     <option value="编程题">编程题</option>
+                    <option value="知识点">知识点</option>
                 </select>
                 
                 <input type="text" id="searchInput" placeholder="搜索题目...">
@@ -85,14 +86,30 @@
             questionsGrid.innerHTML = '';
             
             try {
-                // 从GitHub仓库加载JSON文件
-                const response = await fetch('data/questions.json');
+                // 优先从localStorage加载数据（如果管理员在同一浏览器修改过）
+                const savedQuestions = localStorage.getItem('programmingQuestions');
                 
-                if (!response.ok) {
-                    throw new Error('Failed to load questions');
+                let loadedQuestions;
+                
+                if (savedQuestions) {
+                    loadedQuestions = JSON.parse(savedQuestions);
+                } else {
+                    // 如果localStorage没有数据，从本地JSON文件加载
+                    const response = await fetch('data/questions.json');
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to load questions');
+                    }
+                    
+                    loadedQuestions = await response.json();
                 }
                 
-                questions = await response.json();
+                // 数据验证：确保options是数组（如果存在）
+                questions = loadedQuestions.map(q => ({
+                    ...q,
+                    options: Array.isArray(q.options) ? q.options : undefined
+                }));
+                
                 filteredQuestions = [...questions];
                 displayQuestions();
             } catch (error) {
