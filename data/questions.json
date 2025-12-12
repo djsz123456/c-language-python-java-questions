@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "subject": "C++",
+    "type": "选择题",
+    "question": "以下哪个不是C++的基本数据类型？",
+    "options": ["int", "float", "string", "double"],
+    "answer": "string",
+    "explanation": "string是C++标准库中的类，不是基本数据类型。"
+  },
+  {
+    "id": 2,
+    "subject": "Python",
+    "type": "选择题",
+    "question": "Python中用于定义函数的关键字是？",
+    "options": ["func", "function", "def", "define"],
+    "answer": "def",
+    "explanation": "Python使用def关键字定义函数。"
+  },
+  {
+    "id": 3,
+    "subject": "Java",
+    "type": "选择题",
+    "question": "Java中哪个关键字用于继承类？",
+    "options": ["extends", "inherits", "implements", "extends from"],
+    "answer": "extends",
+    "explanation": "Java使用extends关键字继承类。"
+  }
+]
