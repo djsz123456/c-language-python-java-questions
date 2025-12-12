@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编程题库 - C++、Python、Java</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>编程考试题库</h1>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="index.html">题库首页</a></li>
+                <li><a href="admin/index.html">管理员入口</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main>
+        <div class="container">
+            <!-- 过滤和搜索区域 -->
+            <section class="filter-section">
+                <select id="subjectFilter">
+                    <option value="all">所有科目</option>
+                    <option value="C++">C++</option>
+                    <option value="Python">Python</option>
+                    <option value="Java">Java</option>
+                </select>
+                
+                <select id="typeFilter">
+                    <option value="all">所有题型</option>
+                    <option value="选择题">选择题</option>
+                    <option value="填空题">填空题</option>
+                    <option value="编程题">编程题</option>
+                </select>
+                
+                <input type="text" id="searchInput" placeholder="搜索题目...">
+                <button id="searchBtn">搜索</button>
+                <button id="resetBtn">重置</button>
+            </section>
+            
+            <!-- 题目展示区域 -->
+            <section class="questions-grid" id="questionsGrid">
+                <!-- 题目将通过JavaScript动态加载 -->
+            </section>
+            
+            <!-- 加载状态 -->
+            <div class="loading" id="loading">正在加载题库数据...</div>
+        </div>
+    </main>
+    
+    <script>
+        // 全局变量
+        let questions = [];
+        let filteredQuestions = [];
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            loadQuestions();
+            
+            // 绑定事件监听器
+            document.getElementById('subjectFilter').addEventListener('change', filterQuestions);
+            document.getElementById('typeFilter').addEventListener('change', filterQuestions);
+            document.getElementById('searchBtn').addEventListener('click', filterQuestions);
+            document.getElementById('resetBtn').addEventListener('click', resetFilters);
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    filterQuestions();
+                }
+            });
+        });
+        
+        // 加载题库数据
+        async function loadQuestions() {
+            const loadingElement = document.getElementById('loading');
+            const questionsGrid = document.getElementById('questionsGrid');
+            
+            loadingElement.classList.remove('hidden');
+            questionsGrid.innerHTML = '';
+            
+            try {
+                // 从GitHub仓库加载JSON文件
+                const response = await fetch('data/questions.json');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load questions');
+                }
+                
+                questions = await response.json();
+                filteredQuestions = [...questions];
+                displayQuestions();
+            } catch (error) {
+                console.error('Error loading questions:', error);
+                questionsGrid.innerHTML = '<div class="error-message">加载题库失败，请稍后重试。</div>';
+            } finally {
+                loadingElement.classList.add('hidden');
+            }
+        }
+        
+        // 筛选题目
+        function filterQuestions() {
+            const subject = document.getElementById('subjectFilter').value;
+            const type = document.getElementById('typeFilter').value;
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            
+            filteredQuestions = questions.filter(question => {
+                const matchesSubject = subject === 'all' || question.subject === subject;
+                const matchesType = type === 'all' || question.type === type;
+                const matchesSearch = !searchText || 
+                    question.question.toLowerCase().includes(searchText) ||
+                    (question.explanation && question.explanation.toLowerCase().includes(searchText));
+                
+                return matchesSubject && matchesType && matchesSearch;
+            });
+            
+            displayQuestions();
+        }
+        
+        // 重置筛选条件
+        function resetFilters() {
+            document.getElementById('subjectFilter').value = 'all';
+            document.getElementById('typeFilter').value = 'all';
+            document.getElementById('searchInput').value = '';
+            filteredQuestions = [...questions];
+            displayQuestions();
+        }
+        
+        // 显示题目
+        function displayQuestions() {
+            const questionsGrid = document.getElementById('questionsGrid');
+            
+            if (filteredQuestions.length === 0) {
+                questionsGrid.innerHTML = '<div style="text-align: center; width: 100%; padding: 2rem;">没有找到匹配的题目</div>';
+                return;
+            }
+            
+            questionsGrid.innerHTML = filteredQuestions.map(question => `
+                <div class="question-card">
+                    <span class="subject-badge subject-${question.subject.toLowerCase()}">
+                        ${question.subject}
+                    </span>
+                    <h3>${question.type}</h3>
+                    <div class="question-text">${question.question}</div>
+                    
+                    ${question.options ? `
+                        <div class="options">
+                            ${question.options.map((option, index) => `
+                                <div class="option">
+                                    ${String.fromCharCode(65 + index)}. ${option}
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    <div class="answer-section">
+                        <button class="answer-toggle" onclick="toggleAnswer(${question.id})">
+                            查看答案
+                        </button>
+                        <div class="answer-content hidden" id="answer-${question.id}">
+                            <div class="correct-answer">
+                                正确答案: ${question.options ? `${String.fromCharCode(65 + question.options.indexOf(question.answer))}. ${question.answer}` : question.answer}
+                            </div>
+                            ${question.explanation ? `<div class="explanation">解析: ${question.explanation}</div>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 切换答案显示
+        function toggleAnswer(questionId) {
+            const answerElement = document.getElementById(`answer-${questionId}`);
+            const toggleButton = event.target;
+            
+            if (answerElement.classList.contains('hidden')) {
+                answerElement.classList.remove('hidden');
+                toggleButton.textContent = '隐藏答案';
+            } else {
+                answerElement.classList.add('hidden');
+                toggleButton.textContent = '查看答案';
+            }
+        }
+    </script>
+</body>
+</html>
